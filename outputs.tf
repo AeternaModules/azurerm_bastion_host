@@ -1,3 +1,7 @@
+output "bastion_hosts_id" {
+  description = "Map of id values across all bastion_hosts, keyed the same as var.bastion_hosts"
+  value       = { for k, v in azurerm_bastion_host.bastion_hosts : k => v.id }
+}
 output "bastion_hosts_copy_paste_enabled" {
   description = "Map of copy_paste_enabled values across all bastion_hosts, keyed the same as var.bastion_hosts"
   value       = { for k, v in azurerm_bastion_host.bastion_hosts : k => v.copy_paste_enabled }
