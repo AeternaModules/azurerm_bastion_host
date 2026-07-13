@@ -28,16 +28,16 @@ EOT
     location                  = string
     name                      = string
     resource_group_name       = string
-    copy_paste_enabled        = optional(bool)   # Default: true
-    file_copy_enabled         = optional(bool)   # Default: false
-    ip_connect_enabled        = optional(bool)   # Default: false
-    kerberos_enabled          = optional(bool)   # Default: false
-    scale_units               = optional(number) # Default: 2
-    session_recording_enabled = optional(bool)   # Default: false
-    shareable_link_enabled    = optional(bool)   # Default: false
-    sku                       = optional(string) # Default: "Basic"
+    copy_paste_enabled        = optional(bool)
+    file_copy_enabled         = optional(bool)
+    ip_connect_enabled        = optional(bool)
+    kerberos_enabled          = optional(bool)
+    scale_units               = optional(number)
+    session_recording_enabled = optional(bool)
+    shareable_link_enabled    = optional(bool)
+    sku                       = optional(string)
     tags                      = optional(map(string))
-    tunneling_enabled         = optional(bool) # Default: false
+    tunneling_enabled         = optional(bool)
     virtual_network_id        = optional(string)
     zones                     = optional(set(string))
     ip_configuration = optional(object({
@@ -46,22 +46,6 @@ EOT
       subnet_id            = string
     }))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.bastion_hosts : (
-        v.scale_units == null || (v.scale_units >= 2 && v.scale_units <= 50)
-      )
-    ])
-    error_message = "must be between 2 and 50"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.bastion_hosts : (
-        v.zones == null || (length(v.zones) > 0)
-      )
-    ])
-    error_message = "must not be empty"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_bastion_host's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
@@ -106,6 +90,9 @@ EOT
   #   source:    [from commonids.ValidatePublicIPAddressID] !ok
   # path: ip_configuration.public_ip_address_id
   #   source:    [from commonids.ValidatePublicIPAddressID] err != nil
+  # path: scale_units
+  #   condition: value >= 2 && value <= 50
+  #   message:   must be between 2 and 50
   # path: sku
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
   # path: virtual_network_id
@@ -126,5 +113,8 @@ EOT
   #   condition: length(value) <= 256
   #   message:   [from tags.Validate: invalid when len(value) > 256]
   #   source:    [from tags.Validate: invalid when len(value) > 256]
+  # path: zones[*]
+  #   condition: length(value) > 0
+  #   message:   must not be empty
 }
 
